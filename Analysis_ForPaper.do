@@ -197,13 +197,18 @@ Last edited: June 25th, 2018
 		legend(off) yscale(range(-5 5) titlegap(2)) bgcolor(white) graphregion(color(white)) asyvars showyvars horizontal
  		graph export "$figures/BoxPlot.png", width(2000) replace
 
-	lpoly percent_correctt comp_mle, ///
-		degree(1) jitter(10) m(x) mc(black%10) lineopts(lw(thick)) graphregion(color(white)) ///
-		title("Percent of Conditions Treated Correctly", size(medium) justification(left) color(black) span pos(11)) ///
+	tw  (scatter percent_correctt comp_mle, jitter(10) m(x) mc(navy%10) lw(thick)) ///
+		(scatter percent_antibiotict comp_mle, jitter(10) m(x) mc(maroon%10) lw(thick)) ///
+		(lpoly percent_correctt comp_mle, degree(1) lw(thick) lcolor(navy)) ///
+		(lpoly percent_antibiotict comp_mle, degree(1) lw(thick) lcolor(maroon)) ///
+		, ///
+		graphregion(color(white)) ///
+		legend(order(3 4) pos(5) region(lc(none) fc(none)) label(3 "Treated Condition Correctly") label(4 "Gave Inappropriate Antibiotics") cols(1)) ///
+		title("", size(medium) justification(left) color(black) span pos(11)) ///
 		xtitle("Provider's knowledge score {&rarr} ", placement(left) justification(left)) xscale(titlegap(2)) ///
 		ylab(0 "0" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%",angle(0) nogrid) yscale(noli) bgcolor(white) ytitle("") ///
 		note(" ") xlabel(-5 (1) 5) xscale(noli)
-		graph export "$figures/Treatment_Knowledge_Scatter.png", width(2000) replace
+		graph export "$figures/Treatment_Antibiotic_Knowledge_Scatter.png", width(2000) replace
 
 	lpoly percent_antibiotict comp_mle, ///
 		degree(1) jitter(10) m(x) mc(black%10) lineopts(lw(thick)) graphregion(color(white)) ///
@@ -236,8 +241,8 @@ Last edited: June 25th, 2018
 		legend(order(8 "Kenya 2012" 9 "Madagascar 2016" 10 "Nigeria 2013" 1 "Mozambique 2014" ///
 			2 "Niger 2015"  3 "Senegal 2010" 4 "Tanzania 2014" ///
 			5 "Tanzania 2016" 6 "Togo 2013" 7 "Uganda 2013" ) symy(2) symx(4) size(small) c(1) ring(1) pos(3) region(lc(none) fc(none))) ///
-		title("Percent of Conditions Treated Correctly", size(medium) justification(left) color(black) span pos(11)) ///
-		ytitle(" ") ylabel(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", angle(0) nogrid)  ///
+		title(" ", size(medium) justification(left) color(black) span pos(11)) ///
+		ytitle("Percent of Conditions Treated Correctly") ylabel(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", angle(0) nogrid)  ///
 		xlabel(1 "1st" 25 "25th" 50 "50th" 75 "75th" 99 "99th") ///
 		xtitle("Rank of Provider in Country", placement(left)) ///
 		xsize(7) graphregion(color(white)) xscale(noli titlegap(2)) yscale(noli) ///
@@ -307,3 +312,16 @@ Last edited: June 25th, 2018
 		}
 		.Graph.drawgraph
 		graph export "$figures/TreatmentOutcomes.png", width(2000) replace
+
+
+//collapse (mean) diarrhea_correctt pneumonia_correctt diabetes_correctt tb_correctt malaria_correctt pph_correctt asphyxia_correctt, by(country)
+
+/*
+gen quintile = .
+replace quintile = 1 if pctile_bycountry < 20
+replace quintile = 2 if pctile_bycountry >= 20 & pctile_bycountry < 40
+replace quintile = 3 if pctile_bycountry >= 40 & pctile_bycountry < 60
+replace quintile = 4 if pctile_bycountry >= 60 & pctile_bycountry < 80
+replace quintile = 5 if pctile_bycountry >= 80 & pctile_bycountry < 100
+collapse (mean) percent_correctt, by(country quintile)
+*/
