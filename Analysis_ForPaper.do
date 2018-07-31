@@ -7,16 +7,25 @@ Last edited: June 25th, 2018
 * Initializing
 *****************************************************************************
 
-	global root "/Users/bbdaniels/GitHub/SDI-IRT-Paper/SDI-Paper"
-	global data "$root/data"
-	global figures "$root/figures"
-	global tables "$root/tables"
+	global root "/Users/bbdaniels/GitHub/SDI-IRT-Paper/"
+	global data "$root//SDI-Health/harmonizedData/"
+	global figures "$root/figures/"
+	global tables "$root/tables/"
 	global gphfiles "C:\Users\annak\Box Sync\WB Work\DECRG Github Repo\outputs\figs\CrossCountry\All10\TheGraphs"
 	global recodeAfter = "0"
 
+
+/****BEN****/
+
+	use "${data}/SDI_AllCountries_Vignettes.dta" , clear
+
+
+-
 *****************************************************************************
 /* Regression results using wide data */
 *****************************************************************************
+
+
 
 	use "$data/SDI_Vignette_IRT_Analysis_AfterTo${recodeAfter}_withAge.dta", clear
 
