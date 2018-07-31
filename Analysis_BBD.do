@@ -10,6 +10,17 @@
 	global figures "$root/figures/"
 	global tables "$root/tables/"
 
+	* Graph options
+
+		global graph_opts title(, justification(left) color(black) span pos(11)) graphregion(color(white)) ylab(,angle(0) nogrid) xtit(,placement(left) justification(left)) legend(region(lc(none) fc(none)))
+		global graph_opts_1 title(, justification(left) color(black) span pos(11)) graphregion(color(white)) ylab(,angle(0) nogrid) yscale(noline) legend(region(lc(none) fc(none)))
+		global comb_opts graphregion(color(white))
+		global hist_opts ylab(, angle(0) axis(2)) yscale(noline alt axis(2)) ytit(, axis(2)) ytit(, axis(1)) yscale(off axis(2)) yscale(alt)
+		global note_opts justification(left) color(black) span pos(7)
+		global pct `" 0 "0%" .25 "25%" .5 "50%" .75 "75%" 1 "100%" "'
+		global pctile `" 0 "1st" .25 "25th" .5 "50th" .75 "75th" 1 "99th" "'
+		global bar lc(white) lw(thin) la(center)
+
 /****BEN****/
 
 * Long data construction
@@ -37,6 +48,8 @@
 
 	bys country: gen weight = 1/_N
 
+	drop if disease == "pid" | disease == "pregnant" | disease == "asphyxia"
+
 	save "${root}/vignettes_long.dta" , replace
 
 * Section 1 – Aggregate Measures
@@ -45,19 +58,49 @@
 
 		use "${root}/vignettes_long.dta", clear
 
+			replace disease = proper(disease)
+				replace disease = "TB" if disease == "Tb"
+				replace disease = "PPH" if disease == "Pph"
+				encode disease, gen(case)
+
+			label var diagnosis "Correct Diagnosis"
+			label var correct "Correct Treatment"
+			label var antibiotic "Antibiotics"
+
+
 		* Panel A – Diagnostics
 
-			graph hbar ///
-				diagnosis correct antibiotic ///
-				[pweight = weight]///
-			, blab(bar) over(disease)
+			graph bar ///
+				questions exams tests ///
+				[pweight = weight] ///
+			,  ${graph_opts_1} over(case) xsize(8) title("Panel A: Diagnostic Knowledge") ///
+				bar(1, ${bar} fc(ebblue)) bar(2, ${bar} fc(dkgreen)) bar(3, ${bar} fc(maroon))  ///
+				legend(ring(2) pos(12) r(1) symxsize(small) symysize(small) ///
+					order(1 "History Questions" 2 "Physical Exams" 3 "Laboratory Tests"))
+
+				graph save "${figures}/outcomes_a.gph" , replace
 
 		* Panel B – Treatments
 
-			graph hbar ///
-				questions exams tests ///
-				[pweight = weight]///
-			, blab(bar) over(disease)
+			graph bar ///
+				diagnosis correct antibiotic ///
+				[pweight = weight] ///
+			,  ${graph_opts_1} over(case) xsize(8) title("Panel B: Management Knowledge") ///
+				ylab(${pct}) bar(1, ${bar} fc(ebblue)) bar(2, ${bar} fc(dkgreen)) bar(3, ${bar} fc(maroon))  ///
+				legend(ring(2) pos(12) r(1) symxsize(small) symysize(small) ///
+					order(1 "Correct Diagnosis" 2 "Correct Treatment" 3 "Unecessary Antibiotics"))
+
+				graph save "${figures}/outcomes_b.gph" , replace
+
+		* Combine
+
+			graph combine ///
+				"${figures}/outcomes_a.gph" ///
+				"${figures}/outcomes_b.gph" ///
+			, c(1) ${comb_opts} ysize(5)
+
+				graph export "${figures}/outcomes.eps" , replace
+
 
 	* Figure 2: Correlation of Diagnostic and Treatment Knowledge
 
@@ -65,11 +108,18 @@
 
 		collapse (mean) correct antibiotic weight comp_mle, by(survey_id) fast
 
+		replace comp_mle = comp_mle+5
+
 		tw ///
 			(scatter correct comp_mle , m(x) mcolor(navy%5) jitter(10)) ///
 			(scatter antibiotic comp_mle , m(x) mcolor(maroon%5) jitter(10)) ///
 			(lpoly correct comp_mle , lw(thick) lcolor(navy)) ///
-			(lpoly antibiotic comp_mle , lw(thick) lcolor(maroon))
+			(lpoly antibiotic comp_mle , lw(thick) lcolor(maroon)) ///
+		, ${graph_opts} legend(pos(11) ring(0) c(1) order(3 "Correct Treatment" 4 "Unecessary Antibiotics")) ///
+			ylab(${pct}) xlab(0(1)10) xtitle("Diagnostic Domain Competence Score {&rarr}")
+
+			graph export "${figures}/correlations.eps" , replace
+
 
 * Section 2 – Sensitivity to alternate definitions
 
@@ -89,10 +139,10 @@
 			bys disease : gen tot = _N
 			replace rank = tot - rank + 1
 
-		drop if disease == "pid"
-
 		levelsof country, local(states)
 
+		local lines ""
+		local scatter ""
 		foreach state in `states' {
 			local thick "lc(gray)"
 				if "`state'" == "Nigeria-2013" local thick "lw(thick) lc(black)"
@@ -100,24 +150,23 @@
 			local scatter "`scatter' (scatter rank case if country == "`state'" , mlc(black) msize(vlarge) )"
 		}
 
-		cap gen five = 8
-		gen pos = 7.1
+		cap gen five = 7
+		gen pos = 6.1
 		cap encode disease , gen(case)
 
 		tw `lines' `scatter' ///
-			(scatter rank pos if case == 7 ///
+			(scatter rank pos if case == 6 ///
 					, m(none) mlabc(black) mlp(3) mlabel(country)) ///
 			(scatter rank five , m(none)) ///
 		, ${graph_opts} legend(off) yscale(reverse) xsize(8) ///
 			yscale(noline) ytit("Rank for Condition") ylab(1 "Best" 10 "Worst") ///
-			xscale(noline) xlab(1 "Asphyxia" 2 "Diabetes" 3 "Diarrhea" 4 "Malaria" 5 "Pneumonia" 6 "PPH" 7 "Tuberculosis")
+			xscale(noline) xlab(1 "Diabetes" 2 "Diarrhea" 3 "Malaria" 4 "Pneumonia" 5 "PPH" 6 "Tuberculosis")
 
-			graph export "${directory}/outputs/2_m1_vignettes/ranks.eps" , replace
+			graph export "${figures}/ranks_conditions.eps" , replace
 
 	* Figure – Rank Stability by Position
 
 		use "${root}/vignettes_long.dta", clear
-			drop if disease == "pid"
 
 		collapse (mean) correct comp_mle weight (firstnm) country , by(survey_id) fast
 
@@ -141,6 +190,8 @@
 
 		levelsof country, local(states)
 
+		local lines ""
+		local scatter ""
 		foreach state in `states' {
 			local thick "lc(gray)"
 				if "`state'" == "Nigeria-2013" local thick "lw(thick) lc(black)"
@@ -158,5 +209,7 @@
 		, ${graph_opts} legend(off) yscale(reverse) xsize(8) ///
 			yscale(noline) ytit("Rank for Condition") ylab(1 "Best" 10 "Worst") ///
 			xscale(noline) xtit("Provider Decile {&rarr}") xlab(1 "Lowest" 2(1)9 10 "Highest")
+
+			graph export "${figures}/ranks_positions.eps" , replace
 
 * Ok!
