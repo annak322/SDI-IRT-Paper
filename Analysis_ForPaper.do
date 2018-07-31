@@ -17,7 +17,35 @@ Last edited: June 25th, 2018
 
 /****BEN****/
 
-	use "${data}/SDI_AllCountries_Vignettes.dta" , clear
+	use "${root}/SDI_Vignette_IRT_Analysis_AfterTo0.dta" , clear
+
+
+	* Ranks
+
+		use "${directory}/Constructed/M2_Vignettes_long.dta" , clear
+
+		collapse (mean) treat [pweight = weight_vig] , by(case statename) fast
+		bys case: egen rank = rank(treat) , unique
+			replace rank = 20 - rank
+
+		levelsof statename, local(states)
+
+		foreach state in `states' {
+			local lines "`lines' (line rank case if statename == "`state'" , lc(black))"
+			local scatter "`scatter' (scatter rank case if statename == "`state'" , mlc(black))"
+		}
+
+		gen five = 5
+
+		tw `lines' `scatter' ///
+			(scatter rank case if case == 4 ///
+					, m(none) mlabc(black) mlp(3) mlabel(statename)) ///
+			(scatter rank five , m(none)) ///
+		, ${graph_opts} legend(off) yscale(reverse) ///
+			yscale(noline) ytit("Rank for Condition") ylab(1 "Best" 19 "Worst") ///
+			xscale(noline) xlab(1 "Tuberculosis" 2 "Preeclampsia" 3 "Dysentery" 4 "Diarrhea")
+
+			graph export "${directory}/outputs/2_m1_vignettes/ranks.eps" , replace
 
 
 -
