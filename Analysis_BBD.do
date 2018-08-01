@@ -21,6 +21,10 @@
 		global pctile `" 0 "1st" .25 "25th" .5 "50th" .75 "75th" 1 "99th" "'
 		global bar lc(white) lw(thin) la(center)
 
+	* Ado
+
+		qui do "${root}/LabelCollapse/labelcollapse.ado"
+
 /****BEN****/
 
 * Long data construction
@@ -37,7 +41,7 @@
 	rename *_questions_num questions*
 	rename *_tests_num tests*
 
-	keep country survey_id comp_mle correct* diagnosis* antibiotic* exams* questions* tests*
+	keep provider_age1 provider_educ1 country survey_id comp_mle correct* diagnosis* antibiotic* exams* questions* tests*
 
 	reshape long correct diagnosis antibiotic exams questions tests ///
 		, i(survey_id) j(disease) string
@@ -134,6 +138,23 @@
 			ylab(${pct}) xlab(0(1)10) xtitle("Diagnostic Domain Competence Score {&rarr}")
 
 			graph export "${figures}/correlations.eps" , replace
+
+	* Figure: Age and Education
+
+		use "${root}/vignettes_long.dta", clear
+
+		labelcollapse (mean) comp_mle provider_age1 provider_educ1 weight ///
+			, by(survey_id) fast vallab(provider_age1 provider_educ1)
+
+		replace comp_mle = comp_mle +5
+
+		graph hbox comp_mle [pweight = weight] ///
+		, over(provider_age1 , axis(noline)) over(provider_educ1) noout ///
+			${graph_opts_1} ///
+			box(1, lc(black) fc(none)) ylab(0(1)10) note(" ") ///
+			ytitle("Diagnostic Domain Competence Score")
+
+			graph export "${figures}/ageedu.eps" , replace
 
 
 * Section 2 – Sensitivity to alternate definitions
