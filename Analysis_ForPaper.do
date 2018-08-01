@@ -4,7 +4,7 @@ Last edited: June 25th, 2018
 */
 
 *****************************************************************************
-* Initializing 
+* Initializing
 *****************************************************************************
 
 	global root "C:\Users\annak\Box Sync\WB Work\SDI-Paper"
@@ -184,7 +184,7 @@ Last edited: June 25th, 2018
 		box(1, fcolor(none) lcolor(navy) lwidth(0.4)) marker(1, msize(vsmall) mcolor(navy)) ///
 		box(2, fcolor(none) lcolor(cranberry) lwidth(0.4)) marker(2, msize(vsmall) mcolor(cranberry)) ///
 		box(3, fcolor(none) lcolor(gold*1.2) lwidth(0.4)) marker(3, msize(vsmall) mcolor(gold*1.2)) ///
-		box(4, fcolor(none) lcolor(purple) lwidth(0.4)) marker(4, msize(vsmall) mcolor(purple)) /// 
+		box(4, fcolor(none) lcolor(purple) lwidth(0.4)) marker(4, msize(vsmall) mcolor(purple)) ///
 		box(5, fcolor(none) lcolor(chocolate) lwidth(0.4)) marker(5, msize(vsmall) mcolor(chocolate)) ///
 		box(6, fcolor(none) lcolor(orange) lwidth(0.4)) marker(6, msize(vsmall) mcolor(orange)) ///
 		box(7, fcolor(none) lcolor(midgreen) lwidth(0.4)) marker(7, msize(vsmall) mcolor(midgreen)) ///
@@ -282,7 +282,7 @@ Last edited: June 25th, 2018
 	reshape long questions_num exams_num tests_num correctd correctt antibiotic , i(survey_id) j(disease) string
 
 	replace disease = subinstr(disease, "_", "", .)
-	drop if disease == "pid" | disease == "pregnant" | disease == "eclampsia" 
+	drop if disease == "pid" | disease == "pregnant" | disease == "eclampsia"
 	replace disease = proper(disease)
 	replace disease = "Type II Diabetes" if disease=="Diabetes"
 	replace disease = upper(disease) if disease=="Pph" | disease=="Tb"
@@ -304,7 +304,7 @@ Last edited: June 25th, 2018
 		bar(3, fcolor(cranberry) fintensity(inten100) lcolor(cranberry%100)) ///
 		legend(label(1 "Correctly Diagnosed Condition") ///
 			label(2 "Correctly Treated Condition") label(3 "Prescribed Inappropriate Antibiotics") cols(1) region(lc(none) fc(none)) pos(1) ring(0)) ///
-		bgcolor(white) xsize(7) ylabel(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%") 
+		bgcolor(white) xsize(7) ylabel(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%")
 		local nb=`.Graph.plotregion1.barlabels.arrnels'
 		forval i=1/`nb' {
 		  di "`.Graph.plotregion1.barlabels[`i'].text[1]'"
