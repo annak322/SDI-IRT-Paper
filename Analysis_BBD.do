@@ -54,7 +54,7 @@
 
 * Section 1 – Aggregate Measures
 
-	* Figure 1: Diagnostic and Treatment Knowledge
+	* Figure: Diagnostic and Treatment Knowledge
 
 		use "${root}/vignettes_long.dta", clear
 
@@ -88,7 +88,7 @@
 			,  ${graph_opts_1} over(case) xsize(8) title("Panel B: Management Knowledge") ///
 				ylab(${pct}) bar(1, ${bar} fc(ebblue)) bar(2, ${bar} fc(dkgreen)) bar(3, ${bar} fc(maroon))  ///
 				legend(ring(2) pos(12) r(1) symxsize(small) symysize(small) ///
-					order(1 "Correct Diagnosis" 2 "Correct Treatment" 3 "Unecessary Antibiotics"))
+					order(1 "Correct Diagnosis" 2 "Correct Treatment" 3 "Unnecessary Antibiotics"))
 
 				graph save "${figures}/outcomes_b.gph" , replace
 
@@ -101,8 +101,22 @@
 
 				graph export "${figures}/outcomes.eps" , replace
 
+	* Figure: Boxplot
 
-	* Figure 2: Correlation of Diagnostic and Treatment Knowledge
+		use "${root}/vignettes_long.dta", clear
+
+		collapse (mean) comp_mle (firstnm) country, by(survey_id) fast
+
+		replace comp_mle = comp_mle + 5
+
+		graph hbox comp_mle ///
+		, over(country, sort(1) descending axis(noline)) ${graph_opts_1} ///
+			box(1, lc(black) fc(none)) noout ylab(0(1)10) note(" ") ///
+			ytitle("Diagnostic Domain Competence Score")
+
+			graph export "${figures}/competence.eps" , replace
+
+	* Figure: Correlation of Diagnostic and Treatment Knowledge
 
 		use "${root}/vignettes_long.dta", clear
 
@@ -115,7 +129,7 @@
 			(scatter antibiotic comp_mle , m(x) mcolor(maroon%5) jitter(10)) ///
 			(lpoly correct comp_mle , lw(thick) lcolor(navy)) ///
 			(lpoly antibiotic comp_mle , lw(thick) lcolor(maroon)) ///
-		, ${graph_opts} legend(pos(11) ring(0) c(1) order(3 "Correct Treatment" 4 "Unecessary Antibiotics")) ///
+		, ${graph_opts} legend(pos(11) ring(0) c(1) order(3 "Correct Treatment" 4 "Unnecessary Antibiotics")) ///
 			ylab(${pct}) xlab(0(1)10) xtitle("Diagnostic Domain Competence Score {&rarr}")
 
 			graph export "${figures}/correlations.eps" , replace
@@ -123,13 +137,13 @@
 
 * Section 2 – Sensitivity to alternate definitions
 
-	* Table – Diagnosis
+	* Table: Diagnosis
 
-	* Table – Treatment
+	* Table: Treatment
 
 * Section 3 – Issues with Comparability
 
-	* Figure – Rank Stability by Condition
+	* Figure: Rank Stability by Condition
 
 		use "${root}/vignettes_long.dta", clear
 
@@ -164,7 +178,7 @@
 
 			graph export "${figures}/ranks_conditions.eps" , replace
 
-	* Figure – Rank Stability by Position
+	* Figure: Rank Stability by Position
 
 		use "${root}/vignettes_long.dta", clear
 
@@ -207,7 +221,7 @@
 					, m(none) mlabc(black) mlp(3) mlabel(country)) ///
 			(scatter rank five , m(none)) ///
 		, ${graph_opts} legend(off) yscale(reverse) xsize(8) ///
-			yscale(noline) ytit("Rank for Condition") ylab(1 "Best" 10 "Worst") ///
+			yscale(noline) ytit("Rank for Decile") ylab(1 "Best" 10 "Worst") ///
 			xscale(noline) xtit("Provider Decile {&rarr}") xlab(1 "Lowest" 2(1)9 10 "Highest")
 
 			graph export "${figures}/ranks_positions.eps" , replace
