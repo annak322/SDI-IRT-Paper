@@ -250,4 +250,22 @@
 			graph export "${figures}/ranks_positions.eps" , replace
 			graph save "${figures}/ranks_positions.gph" , replace
 
+	* Combine
+
+		graph combine ///
+			"${figures}/ranks_conditions.gph" ///
+			"${figures}/ranks_positions.gph" ///
+		, ${comb_opts}
+
+	* Combine
+
+		graph combine ///
+			"${figures}/ranks_conditions.gph" ///
+			"${figures}/ranks_positions.gph" ///
+		, ${comb_opts} c(1)
+
+		graph export "${figures}/rank.eps" , replace
+
+
+
 * Ok!
