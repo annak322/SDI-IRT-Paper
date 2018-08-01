@@ -120,16 +120,17 @@
 
 		use "${root}/vignettes_long.dta", clear
 
-		collapse (mean) correct antibiotic weight comp_mle, by(survey_id) fast
+		collapse (mean) correct diagnosis antibiotic weight comp_mle, by(survey_id) fast
 
 		replace comp_mle = comp_mle+5
 
 		tw ///
-			(scatter correct comp_mle , m(x) mcolor(navy%5) jitter(10)) ///
-			(scatter antibiotic comp_mle , m(x) mcolor(maroon%5) jitter(10)) ///
-			(lpoly correct comp_mle , lw(thick) lcolor(navy)) ///
-			(lpoly antibiotic comp_mle , lw(thick) lcolor(maroon)) ///
-		, ${graph_opts} legend(pos(11) ring(0) c(1) order(3 "Correct Treatment" 4 "Unnecessary Antibiotics")) ///
+			(histogram comp_mle , yaxis(2) fc(gs12) lc(gs12) la(center)) ///
+			(lpoly diagnosis comp_mle [aweight = weight], degree(1) lw(thick) lcolor(ebblue)) ///
+			(lpoly correct comp_mle [aweight = weight], degree(1) lw(thick) lcolor(dkgreen)) ///
+			(lpoly antibiotic comp_mle [aweight = weight], degree(1)  lw(thick) lcolor(maroon)) ///
+		, ${graph_opts} ${hist_opts} legend(pos(11) ring(0) c(1) symxsize(small) ///
+				order(1 "Distribution" 2 "Correct Diagnosis" 3 "Correct Treatment" 4 "Unnecessary Antibiotics")) ///
 			ylab(${pct}) xlab(0(1)10) xtitle("Diagnostic Domain Competence Score {&rarr}")
 
 			graph export "${figures}/correlations.eps" , replace
