@@ -199,6 +199,7 @@
 			xscale(noline) xlab(1 "Diabetes" 2 "Diarrhea" 3 "Malaria" 4 "Pneumonia" 5 "PPH" 6 "Tuberculosis")
 
 			graph export "${figures}/ranks_conditions.eps" , replace
+			graph save "${figures}/ranks_conditions.gph" , replace
 
 	* Figure: Rank Stability by Position
 
@@ -247,5 +248,6 @@
 			xscale(noline) xtit("Provider Decile {&rarr}") xlab(1 "Lowest" 2(1)9 10 "Highest")
 
 			graph export "${figures}/ranks_positions.eps" , replace
+			graph save "${figures}/ranks_positions.gph" , replace
 
 * Ok!
