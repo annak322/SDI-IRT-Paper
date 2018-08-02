@@ -144,9 +144,11 @@
 		use "${root}/vignettes_long.dta", clear
 
 		labelcollapse (mean) comp_mle provider_age1 provider_educ1 weight ///
-			, by(survey_id) fast vallab(provider_age1 provider_educ1)
+			(firstnm) country , by(survey_id) fast vallab(provider_age1 provider_educ1)
 
 		replace comp_mle = comp_mle +5
+
+		areg comp_mle i.provider_age1##i.provider_educ1 if provider_educ1>1, a(country)
 
 		graph hbox comp_mle [pweight = weight] ///
 		, over(provider_age1 , axis(noline)) over(provider_educ1) noout ///
@@ -257,14 +259,14 @@
 			"${figures}/ranks_positions.gph" ///
 		, ${comb_opts}
 
-	* Combine
+		* Combine
 
-		graph combine ///
-			"${figures}/ranks_conditions.gph" ///
-			"${figures}/ranks_positions.gph" ///
-		, ${comb_opts} c(1)
+			graph combine ///
+				"${figures}/ranks_conditions.gph" ///
+				"${figures}/ranks_positions.gph" ///
+			, ${comb_opts} c(1)
 
-		graph export "${figures}/rank.eps" , replace
+			graph export "${figures}/rank.eps" , replace
 
 
 
