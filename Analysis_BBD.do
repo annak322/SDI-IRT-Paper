@@ -148,16 +148,24 @@
 
 		replace comp_mle = comp_mle +5
 
-		areg comp_mle i.provider_age1##i.provider_educ1 if provider_educ1>1, a(country)
+		areg comp_mle i.provider_age1##i.provider_educ1 [pweight = weight], a(country)
 
-		graph hbox comp_mle [pweight = weight] ///
-		, over(provider_age1 , axis(noline)) over(provider_educ1) noout ///
-			${graph_opts_1} ///
-			box(1, lc(black) fc(none)) ylab(0(1)10) note(" ") ///
-			ytitle("Diagnostic Domain Competence Score")
+		margins , over(provider_age1 provider_educ1)
+			mat a = r(table)
+			local 1 = a[1,10]
+			local 2 = a[1,11]
+			local 3 = a[1,12]
+		marginsplot ///
+			, ${graph_opts} title("") xtit("Provider Age {&rarr}") ytit("{&larr} Predicted Competence {&rarr}") ///
+			plotopts(msize(large) lc(black) mlc(black)) ciopts(lc(black)) ///
+			xlab(1 "Under 25" 2 "25-34" 3 "35-44" 4 "45+" 5 " ") ///
+			legend(off) /// ring(1) pos(3) c(1)) ///
+			addplot(scatteri `1' 4.1 "{&larr} Primary"  ///
+			 `2' 4.1 "{&larr} Secondary" ///
+		 	 `3' 4.1 "{&larr} Post-Secondary" ///
+			  5 5.2 "" , m(none) mlabc(black) mlabs(med))
 
-			graph export "${figures}/ageedu.eps" , replace
-
+			  graph export "${figures}/ageedu.eps" , replace
 
 * Section 2 – Sensitivity to alternate definitions
 
