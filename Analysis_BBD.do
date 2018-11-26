@@ -5,7 +5,8 @@
 * Initializing
 *****************************************************************************
 
-	global root "/Users/bbdaniels/GitHub/SDI-IRT-Paper/"
+	**global root "/Users/bbdaniels/GitHub/SDI-IRT-Paper/"
+	global root "C:/Users/annak/Documents/GitHub/SDI-IRT-Paper/"
 	global data "$root//SDI-Health/harmonizedData/"
 	global figures "$root/figures/"
 	global tables "$root/tables/"
@@ -23,7 +24,37 @@
 
 	* Ado
 
-		qui do "${root}/LabelCollapse/labelcollapse.ado"
+		qui do "${root}/ado/LabelCollapse/labelcollapse.ado"
+		qui do "${root}/ado/EasyIRT/easyirt.ado"
+		qui do "${root}/ado/OpenIRT/openirt.ado"
+
+	* Enter the list of countries to analyze: 
+	
+		global theCountries ///
+			`" "Kenya-2012" "Madagascar-2016" "Nigeria-2013" "Tanzania-2014" "Tanzania-2016" "Uganda-2013" "Mozambique-2014" "Niger-2015" "Senegal-2010" "Togo-2013" "'
+
+	* Recalculate IRT scores? (Set "yes" or "no"):
+
+		global doIRT = "no"
+
+	* Recode "Would do if in ideal world" to 0 or 1? (Set "0" or "1"):
+
+		global recodeAfter = "0"
+
+*****************************************************************************
+* Constructing dataset
+*****************************************************************************
+
+	if "$doIRT" == "yes" {
+
+		do "${root}/Do_IRT.do"
+
+	}
+
+	qui do "${root}/Make_Variables.do"
+
+*****************************************************************************
+*****************************************************************************	
 
 /****BEN****/
 
@@ -276,6 +307,101 @@
 
 			graph export "${figures}/rank.eps" , replace
 
+*****************************************************************************
+*****************************************************************************	
 
+/****ANNA****/
+
+* Construct alternate treatment definitions
+
+	use "${root}/SDI_Vignette_IRT_Analysis_AfterTo0.dta" , clear
+
+	egen diarrhea_correctt1 = anymatch(diarrhea_treat_ivfluids diarrhea_treat_ngtube diarrhea_treat_tubedose diarrhea_refer_facility diarrhea_refer_clinician diarrhea_treat_ors diarrhea_educate_ors), val(1)
+	
+	egen diarrhea_correctt2 = anymatch(diarrhea_treat_ivfluids diarrhea_treat_ngtube diarrhea_treat_tubedose diarrhea_treat_ors diarrhea_educate_ors), val(1)
+	replace diarrhea_correctt2 = 1 if (diarrhea_refer_facility==1 | diarrhea_refer_clinician==1) & facility_level==1
+
+	egen diarrhea_correctt3 = anymatch(diarrhea_treat_ivfluids diarrhea_treat_ngtube diarrhea_treat_tubedose diarrhea_treat_ors diarrhea_educate_ors), val(1)
+	replace diarrhea_correctt3 = 0 if diarrhea_treat_zinc==0
+	replace diarrhea_correctt3 = 1 if (diarrhea_refer_facility==1 | diarrhea_refer_clinician==1) & facility_level==1
+
+	egen diarrhea_correctt4 = anymatch(diarrhea_treat_ivfluids diarrhea_treat_ngtube diarrhea_treat_tubedose), val(1)
+	replace diarrhea_correctt4 = 1 if (diarrhea_refer_facility==1 | diarrhea_refer_clinician==1) & facility_level==1
+	
+	egen diarrhea_correctt5 = anymatch(diarrhea_treat_ivfluids diarrhea_treat_ngtube diarrhea_treat_tubedose), val(1)
+	replace diarrhea_correctt5 = 0 if diarrhea_treat_zinc==0
+	replace diarrhea_correctt5 = 1 if (diarrhea_refer_facility==1 | diarrhea_refer_clinician==1) & facility_level==1
+
+	egen pneumonia_correctt1 = anymatch(pneumonia_treat_amoxy_dose pneumonia_treat_amoxycillin pneumonia_treat_xpen pneumonia_treat_cotrimox pneumonia_refer_facility pneumonia_refer_clinician), val(1)
+	
+	egen pneumonia_correctt2 = anymatch(pneumonia_treat_amoxy_dose pneumonia_treat_amoxycillin pneumonia_treat_xpen pneumonia_treat_cotrimox), val(1)
+	replace pneumonia_correctt2 = 1 if (pneumonia_refer_facility==1 | pneumonia_refer_clinician==1) & facility_level==1
+	
+	egen pneumonia_correctt3 = anymatch(pneumonia_treat_amoxy_dose pneumonia_treat_amoxycillin), val(1)
+	replace pneumonia_correctt3 = 1 if (pneumonia_refer_facility==1 | pneumonia_refer_clinician==1) & facility_level==1
+
+	egen tb_correctt1 = anymatch(tb_treat_ctdurdose tb_treat_ctdose tb_treat_ctdrugs tb_treat_ctdur tb_refer_tbclinic tb_refer_facility tb_refer_clinician tb_test_chest_xray tb_test_sputum tb_test_idr), val(1)
+	
+	egen tb_correctt2 = anymatch(tb_treat_ctdurdose tb_treat_ctdose tb_treat_ctdrugs tb_treat_ctdur tb_refer_tbclinic tb_refer_facility tb_refer_clinician tb_test_sputum), val(1)
+	
+	egen tb_correctt3 = anymatch(tb_treat_ctdurdose tb_treat_ctdose tb_treat_ctdrugs tb_treat_ctdur tb_refer_tbclinic tb_refer_facility tb_refer_clinician), val(1)
+
+	egen malaria_correctt1 = anymatch(malaria_treat_al_wdose malaria_treat_al_dose malaria_treat_artemisinin malaria_treat_al malaria_treat_artesunateam malaria_refer_facility malaria_refer_clinician), val(1)
+	
+	egen malaria_correctt2 = anymatch(malaria_treat_al_wdose malaria_treat_al_dose malaria_treat_artemisinin malaria_treat_al malaria_treat_artesunateam), val(1)
+	replace malaria_correctt2 = 1 if (malaria_refer_facility==1 | malaria_refer_clinician==1) & facility_level==1 
+
+	egen malaria_correctt3 = anymatch(malaria_treat_al_wdose malaria_treat_al_dose malaria_treat_artemisinin malaria_treat_al malaria_treat_artesunateam), val(1)
+	replace malaria_correctt3 = 0 if malaria_treat_iron_folicacid==0
+	replace malaria_correctt3 = 1 if (malaria_refer_facility==1 | malaria_refer_clinician==1) & facility_level==1 
+
+	foreach x in "diarrhea" "pneumonia" "tb" "malaria" {
+		foreach y of varlist `x'_correctt? {
+			replace `y' = . if skip_`x'==1
+			replace `y' = 0 if skip_`x'==0 & `y'==.
+		}
+	}
+
+	collapse (mean) diarrhea_correctt? pneumonia_correctt? tb_correctt? malaria_correctt?
+	xpose, clear varname
+	gen id = .
+	local counter = 0
+	forvalues i = 1/3 {
+		replace id = .25 + 0.25*`counter' if _varname=="pneumonia_correctt`i'"
+		local ++counter
+	}
+	local counter = 0 
+	forvalues i = 1/3 {
+		replace id = 1.75 + 0.25*`counter' if _varname=="malaria_correctt`i'"
+		local ++counter
+	}
+	local counter = 0 
+	forvalues i = 1/3 {
+		replace id = 3.25 + 0.25*`counter' if _varname=="tb_correctt`i'"
+		local ++counter
+	}
+	local counter = 0 
+	forvalues i = 1/5 {
+		replace id = 4.75 + 0.25*`counter' if _varname=="diarrhea_correctt`i'"
+		local ++counter
+	}
+
+	forvalues i = 1/5 {
+		replace _varname = subinstr(_varname, "`i'", "", .)
+	}
+
+	tw (scatter id v1 if _varname=="diarrhea_correctt") ///
+		(scatter id v1 if _varname=="tb_correctt") ///
+		(scatter id v1 if _varname=="malaria_correctt") ///
+		(scatter id v1 if _varname=="pneumonia_correctt"), ///
+		yline(.25 .5 .75 1.75 2 2.25 3.25 3.5 3.75 4.75 5 5.25 5.5 5.75, lpattern(dash) lcolor(gs12)) ///
+		xtitle("Fraction who correctly managed condition") xlabel(, format(%9.1f))  ///
+		legend(label(1 "Diarrhea") label(2 "TB") label(3 "Malaria") label(4 "Pneumonia") cols(4) pos(12) ) ///
+		ylabel(5.75 "Strictest" 4.75 "Least Strict" 3.75 "Strictest" 3.25 "Least Strict" ///
+		2.25 "Strictest" 1.757 "Least Strict" 0.75 "Strictest" 0.25 "Least Strict", labsize(medsmall)) ytitle("") ///
+		$graph_opts
+
+	graph export "${figures}/treatment_definitions.eps" , replace
+	graph save "${figures}/treatment_definitions.gph" , replace
 
 * Ok!
