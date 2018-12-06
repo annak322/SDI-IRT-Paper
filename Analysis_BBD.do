@@ -314,7 +314,9 @@
 
 * Construct alternate treatment definitions
 
-	use "${root}/SDI_Vignette_IRT_Analysis_AfterTo0.dta" , clear
+	use "${root}/SDI_Vignette_IRT_Analysis_AfterTo0.dta" , 
+
+	bys country: gen weight = 1/_N
 
 	egen diarrhea_correctt1 = anymatch(diarrhea_treat_ivfluids diarrhea_treat_ngtube diarrhea_treat_tubedose diarrhea_refer_facility diarrhea_refer_clinician diarrhea_treat_ors diarrhea_educate_ors), val(1)
 	
@@ -362,7 +364,7 @@
 		}
 	}
 
-	collapse (mean) diarrhea_correctt? pneumonia_correctt? tb_correctt? malaria_correctt?
+	collapse (mean) diarrhea_correctt? pneumonia_correctt? tb_correctt? malaria_correctt? [pweight=weight]
 	xpose, clear varname
 	gen id = .
 	local counter = 0
@@ -403,5 +405,6 @@
 
 	graph export "${figures}/treatment_definitions.eps" , replace
 	graph save "${figures}/treatment_definitions.gph" , replace
+	graph save "${figures}/treatment_definitions.png" , replace
 
 * Ok!
